@@ -6,7 +6,7 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/Sammy/Documents/School/Penn/Freshman Year/Semester 2/NETS 150/hw-5 (project)/twitter4j-4/lib/twitter4j-core-4.0.4.jar">
+	<classpathentry kind="lib" path="twitter4j-4/lib/twitter4j-core-4.0.4.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
