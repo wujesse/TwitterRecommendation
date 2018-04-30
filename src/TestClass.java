@@ -1,3 +1,6 @@
+import java.util.List;
+
+import twitter4j.*;
 
 public class TestClass {
 
