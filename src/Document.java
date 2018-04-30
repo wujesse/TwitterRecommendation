@@ -1,5 +1,3 @@
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Set;
@@ -18,19 +16,16 @@ public class Document implements Comparable<Document> {
 	 */
 	private HashMap<String, Integer> termFrequency;
 	
-	/**
-	 * The name of the file to read.
-	 */
-	private String filename;
+	private String text;
 	
 	/**
 	 * The constructor.
-	 * It takes in the name of a file to read.
+	 * It takes in the text to read.
 	 * It will read the file and pre-process it.
-	 * @param filename the name of the file
+	 * @param a String text to analyze
 	 */
-	public Document(String filename) {
-		this.filename = filename;
+	public Document(String text) {
+		this.text = text;
 		termFrequency = new HashMap<String, Integer>();
 		
 		readFileAndPreProcess();
@@ -45,27 +40,23 @@ public class Document implements Comparable<Document> {
 	 * Once the pre-processing is done, we create and update the 
 	 */
 	private void readFileAndPreProcess() {
-		try {
-			Scanner in = new Scanner(new File(filename));
-			System.out.println("Reading file: " + filename + " and preprocessing");
+		Scanner in = new Scanner(text);
+		
+		while (in.hasNext()) {
+			String nextWord = in.next();
 			
-			while (in.hasNext()) {
-				String nextWord = in.next();
-				
-				String filteredWord = nextWord.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
-				
-				if (!(filteredWord.equalsIgnoreCase(""))) {
-					if (termFrequency.containsKey(filteredWord)) {
-						int oldCount = termFrequency.get(filteredWord);
-						termFrequency.put(filteredWord, ++oldCount);
-					} else {
-						termFrequency.put(filteredWord, 1);
-					}
+			String filteredWord = nextWord.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+			
+			if (!(filteredWord.equalsIgnoreCase(""))) {
+				if (termFrequency.containsKey(filteredWord)) {
+					int oldCount = termFrequency.get(filteredWord);
+					termFrequency.put(filteredWord, ++oldCount);
+				} else {
+					termFrequency.put(filteredWord, 1);
 				}
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		}
+		in.close();
 	}
 	
 	/**
@@ -95,14 +86,7 @@ public class Document implements Comparable<Document> {
 	 * The overriden method from the Comparable interface.
 	 */
 	public int compareTo(Document other) {
-		return filename.compareTo(other.getFileName());
-	}
-
-	/**
-	 * @return the filename
-	 */
-	private String getFileName() {
-		return filename;
+		return text.compareTo(other.toString());
 	}
 	
 	/**
@@ -110,6 +94,6 @@ public class Document implements Comparable<Document> {
 	 * @return the filename
 	 */
 	public String toString() {
-		return filename;
+		return text;
 	}
 }
