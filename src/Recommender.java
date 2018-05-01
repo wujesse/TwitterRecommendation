@@ -9,7 +9,7 @@ import twitter4j.*;
 public class Recommender {
 	
 	private ArrayList<User> userList;
-	private PriorityQueue<CosineUser> possibleSuggestions;
+	private PriorityQueue<CosineUser> possibleSuggestions; 
 
 	public Recommender() {
 		//ask for username, then get list of possible suggestions using  yunhee's thing maybe
