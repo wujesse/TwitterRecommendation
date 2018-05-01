@@ -29,7 +29,7 @@ public class TwitterInformation {
 	}
 	
 	private List<User> getFriends(Twitter twitter) {
-		
+
 		 List<User> listFriends = new LinkedList<>();
          List<User> listFollowers = new LinkedList<>();
          
