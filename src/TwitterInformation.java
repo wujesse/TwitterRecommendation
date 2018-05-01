@@ -23,7 +23,7 @@ public class TwitterInformation {
 		
 		
 		
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub 
 		System.out.println("tweet");
 		System.out.println("Sammy tweet"); 
 	        try {
