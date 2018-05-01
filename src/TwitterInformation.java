@@ -33,7 +33,7 @@ public class TwitterInformation {
 		 List<User> listFriends = new LinkedList<>();
          List<User> listFollowers = new LinkedList<>();
          
-		try {
+		try { 
             // get friends
             long cursor = -1;
             PagableResponseList<User> pagableFollowings;
