@@ -1,7 +1,11 @@
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import twitter4j.IDs;
 import twitter4j.PagableResponseList;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -14,8 +18,10 @@ public class TwitterInformation {
 	
 	//Twitter twitter;
 	
+	private List<Long> recommendations;
 	
-	public TwitterInformation() {
+	
+	public TwitterInformation(long id) {
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setDebugEnabled(true)
 		  .setOAuthConsumerKey("Joy1KOjXNlE1qt6JL81WeVPdz")
@@ -26,63 +32,90 @@ public class TwitterInformation {
 		Twitter twitter = tf.getInstance();
 		
 		
+		
+		List<Long> friends = getFriends(twitter, id);
+		List<Long> friendsFollowers = getFriendsFollowers(friends, twitter);
+		friendsFollowers.removeAll(friends);
+		this.recommendations = friendsFollowers;
+		
 	}
 	
-	private List<User> getFriends(Twitter twitter) {
+	public List<Long> getRecommendations() {
+		return this.recommendations;
+	}
+	
+	private List<Long> getFriends(Twitter twitter, long id) {
 
-		 List<User> listFriends = new LinkedList<>();
-         List<User> listFollowers = new LinkedList<>();
+		 List<Long> friends = new ArrayList<>();
+		 long[] friendsArr = new long[10];
          
 		try { 
-            // get friends
             long cursor = -1;
-            PagableResponseList<User> pagableFollowings;
-            
-            
+            //PagableResponseList<User> pagableFollowings;
+            IDs ids;
             do {
-                pagableFollowings = twitter.getFriendsList(twitter.getId(), cursor);
-                for (User user : pagableFollowings) {
-                    listFriends.add(user); // ArrayList<User>
+                ids = twitter.getFriendsIDs(id, cursor);
+                friendsArr = ids.getIDs();
+                /*
+                for (User user : ids) {
+                    friends.add(user.getId()); // ArrayList<User>
                 }
-            } while ((cursor = pagableFollowings.getNextCursor()) != 0);
-
-            // get followers
-            cursor = -1;
-            PagableResponseList<User> pagableFollowers;
-            do {
-                pagableFollowers = twitter.getFollowersList(twitter.getId(), cursor);
-                for (User user : pagableFollowers) {
-                    listFollowers.add(user); // ArrayList<User>
-                }
-            } while ((cursor = pagableFollowers.getNextCursor()) != 0);
+                */
+                for (int i = 0; i < friendsArr.length; i++) {
+        				friends.add(friendsArr[i]);
+        			}
+            } while ((cursor = ids.getNextCursor()) != 0);
 
         } catch (TwitterException e) {
             e.printStackTrace();
         }
 		
-		return listFriends;
+		
+		return friends;
 	}
 	
+	private List<Long> getFriendsFollowers(List<Long> friends, Twitter twitter) {
+		List<Long> followers = new ArrayList<>();
+		
+		Set<Long> set = new HashSet<>();
+		
+		for (Long username : friends) {
+			long cursor = -1;
+			long[] tempids;
+			
+			while(cursor != 0) {
+	            try {
+	                IDs temp = twitter.friendsFollowers().getFollowersIDs(username, cursor);
+	                cursor = temp.getNextCursor();
+	                tempids = temp.getIDs();
+	            } catch (TwitterException e) {
+	                e.printStackTrace();
+	                return null;
+	            }
+
+	            if(tempids != null) {
+	                for (long id : tempids) {
+	                    set.add(id);
+	                }
+	            }
+	        }
+		}
+		
+		followers.addAll(set);
+		
+		return followers;
+	}
+	
+
+	
+	/*
 	private List<User> getFollowers(Twitter twitter) {
-		 List<User> listFriends = new LinkedList<>();
-         List<User> listFollowers = new LinkedList<>();
+         List<User> listFollowers = new ArrayList<>();
          
 		
 		try {
-            // get friends
-            long cursor = -1;
-            PagableResponseList<User> pagableFollowings;
-            
-           
-            do {
-                pagableFollowings = twitter.getFriendsList(twitter.getId(), cursor);
-                for (User user : pagableFollowings) {
-                    listFriends.add(user); // ArrayList<User>
-                }
-            } while ((cursor = pagableFollowings.getNextCursor()) != 0);
-
             // get followers
-            cursor = -1;
+            long cursor = -1;
             PagableResponseList<User> pagableFollowers;
             do {
                 pagableFollowers = twitter.getFollowersList(twitter.getId(), cursor);
@@ -96,7 +129,7 @@ public class TwitterInformation {
         }
 		
 		return listFollowers;
-	}
+	}*/
 	
 	private List<String> getTimeLine(Twitter user) throws TwitterException {
 		   // Twitter twitter = getTwitterinstance();
