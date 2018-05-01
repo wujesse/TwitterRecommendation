@@ -7,7 +7,7 @@ import java.util.PriorityQueue;
 import twitter4j.*;
 
 public class Recommender {
-	
+
 	private ArrayList<User> userList;
 	private PriorityQueue<CosineUser> possibleSuggestions; 
 
