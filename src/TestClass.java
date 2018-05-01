@@ -1,4 +1,7 @@
 
+
+import twitter4j.*;
+
 public class TestClass {
 
 	
