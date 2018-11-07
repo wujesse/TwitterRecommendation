@@ -1,33 +1,29 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import twitter4j.IDs;
 import twitter4j.PagableResponseList;
 import twitter4j.Paging;
+import twitter4j.RateLimitStatus;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
+import twitter4j.api.FriendsFollowersResources;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class TwitterInformation {
 	ConfigurationBuilder cb;
 	Twitter twitter;
 	TwitterFactory tf;
+	FriendsFollowersResources ffResources;
 	
-	//Twitter twitter;
-
+	private List<User> recommendations;
 	
-	private List<Long> recommendations;
-	
-	
-	public TwitterInformation(long id) {
+	public TwitterInformation(String userName) {
+		
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setDebugEnabled(true)
 		  .setOAuthConsumerKey("Joy1KOjXNlE1qt6JL81WeVPdz")
@@ -35,108 +31,87 @@ public class TwitterInformation {
 		  .setOAuthAccessToken("990434071632404480-aLQltQ1715JuXKaDRLKTd9cGQDESTrG")
 		  .setOAuthAccessTokenSecret("bvJdvDHIitQQqbiHy0ZVwcaw9zWIkbmdLxZJCzyNYIOPo");
 
-    tf = new TwitterFactory(cb.build());
+		tf = new TwitterFactory(cb.build());
 		twitter = tf.getInstance();
+		
+		ffResources = twitter.friendsFollowers();
+		long id = 0;
+		try {
+			id = twitter.showUser(userName).getId();
+		} catch (TwitterException e) {
+			System.out.println("username does not exist");
+			System.exit(0);
+		}
+		
     
-		List<Long> friends = getFriends(twitter, id);
-		List<Long> friendsFollowers = getFriendsFollowers(friends, twitter);
+		List<User> friends = getFriends(twitter, id);
+		List<User> friendsFollowers = getFriendsFollowers(friends, twitter);
 		friendsFollowers.removeAll(friends);
 		this.recommendations = friendsFollowers;
 	}
 	
-	public List<Long> getRecommendations() {
+	public Twitter newTwitterInstance() {
+		return tf.getInstance();
+	}
+	
+	public List<User> getRecommendations() {
 		return this.recommendations;
 	}
 	
-	private List<Long> getFriends(Twitter twitter, long id) {
-
-		 List<Long> friends = new ArrayList<>();
-		 long[] friendsArr = new long[10];
-         
-		try { 
-            long cursor = -1;
-            //PagableResponseList<User> pagableFollowings;
-            IDs ids;
-            do {
-                ids = twitter.getFriendsIDs(id, cursor);
-                friendsArr = ids.getIDs();
-                /*
-                for (User user : ids) {
-                    friends.add(user.getId()); // ArrayList<User>
-                }
-                */
-                for (int i = 0; i < friendsArr.length; i++) {
-        				friends.add(friendsArr[i]);
-        			}
-            } while ((cursor = ids.getNextCursor()) != 0);
-
-        } catch (TwitterException e) {
-            e.printStackTrace();
-        }
-		
-		
+	private List<User> getFriends(Twitter twitter, long id) {
+		List<User> friends = new ArrayList<User>();
+		try {
+			friends = ffResources.getFriendsList(id, -1);
+		} catch (TwitterException e) {
+			e.printStackTrace();
+		}
 		return friends;
 	}
 	
-	private List<Long> getFriendsFollowers(List<Long> friends, Twitter twitter) {
-		List<Long> followers = new ArrayList<>();
+	private List<User> getFriendsFollowers(List<User> friends, Twitter twitter) {
+		List<User> followers = new ArrayList<>();
+		Set<User> set = new HashSet<>();
+		RateLimitStatus followersStatus = null;
+		int limit = 0;
+		try {
+			followersStatus = twitter.getRateLimitStatus().get("/followers/list");
+			limit = followersStatus.getRemaining();
+		} catch (TwitterException e1) {
+			e1.printStackTrace();
+		}
 		
-		Set<Long> set = new HashSet<>();
+		if (limit == 0) {
+			System.out.println("\nYou have reached the limit for followersList calls from the Twitter API. Please "
+				+ "wait " + followersStatus.getSecondsUntilReset() + " seconds for the limit to reset.\nExiting...");
+			System.exit(1);
+		}
 		
-		for (Long username : friends) {
+		int i = 0;
+		
+		while (limit > i && friends.size() > i) {
+			System.out.println("FollowerList Endpoints Used: " + i);
 			long cursor = -1;
-			long[] tempids;
-			
-			while(cursor != 0) {
-	            try {
-	                IDs temp = twitter.friendsFollowers().getFollowersIDs(username, cursor);
-	                cursor = temp.getNextCursor();
-	                tempids = temp.getIDs();
+			PagableResponseList<User> followersList = null;
+			//do {
+				try {
+					followersList = ffResources.getFollowersList(friends.get(i).getId(), cursor);
+	                set.addAll(followersList);
 	            } catch (TwitterException e) {
 	                e.printStackTrace();
 	                return null;
 	            }
-
-	            if(tempids != null) {
-	                for (long id : tempids) {
-	                    set.add(id);
-	                }
-	            }
-	        }
+			//} while ((cursor = followersList.getNextCursor()) != 0);
+            
+            i++;
 		}
 		
 		followers.addAll(set);
-		
 		return followers;
 	}
 	
-
-	
-	/*
-	private List<User> getFollowers(Twitter twitter) {
-         List<User> listFollowers = new ArrayList<>();
-         
-		try {
-            // get followers
-            long cursor = -1;
-            PagableResponseList<User> pagableFollowers;
-            do {
-                pagableFollowers = twitter.getFollowersList(twitter.getId(), cursor);
-                for (User user : pagableFollowers) {
-                    listFollowers.add(user); // ArrayList<User>
-                }
-            } while ((cursor = pagableFollowers.getNextCursor()) != 0);
-
-        } catch (TwitterException e) {
-            e.printStackTrace();
-        }
-		
-		return listFollowers;
-	}*/
-	
 	public ArrayList<String> getTweets(String user, int tweetNumber) throws TwitterException {
 	    List statuses = new ArrayList();
-	    ArrayList<String> tweets = new ArrayList<String>();
+	    ArrayList tweets = new ArrayList<String>();
 	    int pageno = 1;
 	    int count = 0;
 	    System.out.println("Gathering " + user + "'s tweets...");
@@ -157,24 +132,21 @@ public class TwitterInformation {
 	        }
 	    }
 	    return tweets;     
-		}
+	}
 	
-	public String getTimeline(String user) {
-	    String timeline = "";
+	public String getTimeline(long id) {
+	    StringBuilder timeline = new StringBuilder();
 		try {
             List<Status> statuses;
-            statuses = twitter.getUserTimeline(user);
+            statuses = twitter.getUserTimeline(id);
 
-            System.out.println("Showing @" + user + "'s user timeline.");
+            System.out.println("Getting" + id + "'s user timeline.");
             for (Status status : statuses) {
-                timeline += status.getText();
-            	//System.out.println("@" + status.getUser().getScreenName() + " - " + status.getText());
+                timeline.append(status.getText());
             }
         } catch (TwitterException te) {
-            te.printStackTrace();
-            System.out.println("Failed to get timeline: " + te.getMessage());
-            System.exit(-1);
+            
         }
-        return timeline;    
+        return timeline.toString();    
 	}
 }

@@ -8,33 +8,59 @@ import twitter4j.*;
 
 public class Recommender {
 
-	private ArrayList<User> userList;
+	private List<User> userList;
 	private PriorityQueue<CosineUser> possibleSuggestions; 
+	TwitterInformation tInfo;
 
-	public Recommender() {
-		//ask for username, then get list of possible suggestions using  yunhee's thing maybe
-		Document query = new Document("main user's timeline text");
+	public Recommender(String userName) {
+		tInfo = new TwitterInformation(userName);
+		userList = new ArrayList<User>();		
 		ArrayList<Document> allStatuses = new ArrayList<Document>();
 		possibleSuggestions = new PriorityQueue<CosineUser>(Collections.reverseOrder());
-		for (User user : userList) {
-			/*
-			 * use sammy's thing to get the text from their timeline
-			 */
-			allStatuses.add(new Document("text from sammy's thing"));
+		
+		userList = tInfo.getRecommendations();
+		
+		User mainUser = null;
+		try {
+			mainUser = tInfo.newTwitterInstance().showUser(userName);
+		} catch (TwitterException e) {
+			e.printStackTrace();
 		}
+		
+		Document query = new Document(mainUser.getId(), tInfo.getTimeline(mainUser.getId()));
+		allStatuses.add(query);
+		userList.add(mainUser);
+		
+		int j = 0;
+		for (User user : userList) {
+			if (j < 899) {
+				String timeLineText = tInfo.getTimeline(user.getId());
+				allStatuses.add(new Document(user.getId(), timeLineText));
+				j++;
+			}
+			else {
+				break;
+			}
+		}
+		
 		Corpus corpus = new Corpus(allStatuses);
 		VectorSpaceModel vectorSpace = new VectorSpaceModel(corpus);
 		
-		for (int i = 1; i < allStatuses.size(); i++) {
-			possibleSuggestions.add(
-					new CosineUser(userList.get(i), vectorSpace.cosineSimilarity(query, allStatuses.get(i))));
+		for (int i = 0; i < userList.size(); i++) {
+			possibleSuggestions.add(new CosineUser(userList.get(i), 
+					vectorSpace.cosineSimilarity(query, allStatuses.get(i))));
 		}
 	}
 	
 	public List<String> getRecommendedUsers(int recs) {
 		List<String> recUsers = new ArrayList<String>();
-		for (int i = 0; i < recs; i++) {
-			recUsers.add(possibleSuggestions.remove().getName());
+		for (int i = 0; i < recs + 1; i++) {
+			if (!possibleSuggestions.isEmpty()) {
+				recUsers.add(possibleSuggestions.remove().getScreenName());
+			}
+			else {
+				break;
+			}
 		}
 		return recUsers;
 	}

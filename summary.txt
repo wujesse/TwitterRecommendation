@@ -1,0 +1,55 @@
+Members: Yunhee Hyun, Jesse Wu, Sammy Xu 
+
+Project Idea ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Recommend users for a specified user to follow on Twitter based on triadic closure and cosine
+similarity.
+
+Logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For a specific Twitter user, get a list of people the user follows. For each user in that list, get
+a list of their followers. These are the potential suggested friends based on triadic closure. 
+Then get text from all of these potential people’s timelines and do cosine similarity comparison 
+with the user’s timeline text. Highest similarity people are recommended for the user to follow.
+
+Project Categories: Implementation / Empirical analysis ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Social Networks - we used the Twitter API and the data they have on users and their friends
+Graphs algorithms - we applied membership closure (triadic closure) based on the data we retrieved 
+                    from the Twitter API.
+Document Search - we parsed through the data to access friends, followers, and timelines
+Recommendations - we used cosine similarity as the basis of our recommendation system
+
+Breakdown of who does what ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sammy: registered project to get access to data and got the text from people’s timelines
+Yunhee: implemented the triadic closure logic. 
+Jesse: implemented the cosine comparison logic by modifying and adapting given code from Homework 4
+
+Notes for Readme ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One limitation is that we can only call the methods of the Twitter API roughly 900 times every 15 
+minutes. Given how we iterate through a lot of the data multiple times, one run of our program 
+easily approaches this limit. Thus, when testing our program please be cautious of this limit. 
+If you attempt to run our program multiple times within a short time frame, it is very likely that 
+you will run into errors.
+
+Due to the API, another limitation is that we can only get the first 20 Tweets of a user’s timeline. 
+Since our analysis is based mostly on the cosine similarity, this small sample size may reduce the 
+accuracy of our returned recommendations. The last limitation is that, for an arbitrary user, we 
+can only find 15 of its followers. Again, this limits our the accuracy of our analysis.
+        
+User Manual ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The only parameter the user is expected to give the program is the handle of the Twitter account 
+they would like to find recommendations for with our program. Then they wait 10-20 seconds for the 
+code to run and will receive a list of users they should follow on the screen. This is based on 
+their timeline and those they follow. 
+
+*Note, by default, we only return the top 10 similar users to follow. Also, since many tweets will 
+have the same tf-idf rating (because most tweets only have a couple instances of a given term) so
+running the code multiple times on the same user may return different recommendations each time
+since more than 1 user can have the same rating. However, these users will all have the same tf-idf
+ranking.
+
+
