@@ -38,7 +38,7 @@ public class VectorSpaceModel {
 	 * This creates the tf-idf vectors.
 	 */
 	private void createTfIdfWeights() {
-		System.out.println("Creating the tf-idf weight vectors");
+		System.out.println("Creating the tf-idf weight vectors\n");
 		Set<String> terms = corpus.getInvertedIndex().keySet();
 		
 		for (Document document : corpus.getDocuments()) {
@@ -47,9 +47,7 @@ public class VectorSpaceModel {
 			for (String term : terms) {
 				double tf = document.getTermFrequency(term);
 				double idf = corpus.getInverseDocumentFrequency(term);
-				
 				double weight = tf * idf;
-				
 				weights.put(term, weight);
 			}
 			tfIdfWeights.put(document, weights);
@@ -82,7 +80,7 @@ public class VectorSpaceModel {
 		double product = 0;
 		HashMap<String, Double> weights1 = tfIdfWeights.get(d1);
 		HashMap<String, Double> weights2 = tfIdfWeights.get(d2);
-		
+
 		for (String term : weights1.keySet()) {
 			product += weights1.get(term) * weights2.get(term);
 		}

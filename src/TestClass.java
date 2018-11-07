@@ -1,30 +1,19 @@
-
-
-import java.util.ArrayList;
-
-import twitter4j.*;
+import java.util.Scanner;
 
 public class TestClass {
 
-	
 	public static void main(String[] args) {
-		System.out.println("tweet");
-		System.out.println("Sammy tweet");
+		Scanner in = new Scanner(System.in);
+		System.out.println("Enter a twitter username to get recommendations for (ommit the '@').");
+		String name = in.next();
+		Recommender rec = new Recommender(name);
 		
-		TwitterInformation arena = new TwitterInformation();
-
-		try {
-			ArrayList<String> tweets = arena.getTweets("neiltyson", 500);
-			System.out.println(tweets.get(1));
-			
-			String timeline = arena.getTimeline("neiltyson");
-			System.out.println(timeline);
-		} catch (TwitterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		System.out.println("You should follow these users for content you like:\n\n");
+		for (String str : rec.getRecommendedUsers(10)) {
+			if (!str.equals(name)){
+				System.out.println(str);
+			}
 		}
-		
+		in.close();
 	}
-	
-
 }

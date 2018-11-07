@@ -15,8 +15,8 @@ public class Document implements Comparable<Document> {
 	 * Maps a term to the number of times this terms appears in this document. 
 	 */
 	private HashMap<String, Integer> termFrequency;
-	
 	private String text;
+	private long id;
 	
 	/**
 	 * The constructor.
@@ -24,10 +24,11 @@ public class Document implements Comparable<Document> {
 	 * It will read the file and pre-process it.
 	 * @param a String text to analyze
 	 */
-	public Document(String text) {
+	public Document(long id, String text) {
 		this.text = text;
+		this.id = id;
 		termFrequency = new HashMap<String, Integer>();
-		
+
 		readFileAndPreProcess();
 	}
 	
@@ -56,6 +57,7 @@ public class Document implements Comparable<Document> {
 				}
 			}
 		}
+		
 		in.close();
 	}
 	
@@ -80,7 +82,21 @@ public class Document implements Comparable<Document> {
 	public Set<String> getTermList() {
 		return termFrequency.keySet();
 	}
+	
+	public long getId() {
+		return id;
+	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Document) {
+			return id == ((Document) o).getId();
+		}
+		else {
+			return false;
+		}
+	}
+	
 	@Override
 	/**
 	 * The overriden method from the Comparable interface.
